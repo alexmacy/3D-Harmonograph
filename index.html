@@ -22,7 +22,6 @@
     top: 10px;
   }
   .left {
-    height: 900px;
     display: flex;
     flex-flow: column wrap;
   }
@@ -30,11 +29,14 @@
     background-color: rgba(255, 255, 255, .75);
     box-shadow: 0px 0px 5px rgb(200, 200, 200);
     margin: 5px;
-    padding: 10px;
+    padding: 5px;
+  }
+  .summary {
+    padding: 5px;    
   }
   button, .right label {
     display: block;
-    margin: 5px;
+    margin-top: 5px;
   }
   .scene-container {
     position: absolute;
@@ -85,11 +87,11 @@
       <input type="range" value="10" oninput="updateVolume(this.value)">
     </div>
     <button onclick="controls.reset()">Recenter Camera</button>
-    <button onclick="oscillators.push(new Oscillator())">Add New Oscillator</button>
+    <button onclick="addOscillator()">Add New Oscillator</button>
     <button onclick="freezePhase(this)">Stop Phase</button>
-    <div class="line-length-text">Line Length: 20,000</div>
+    <div class="line-length-text">Line Length: 40,000</div>
     <div>
-      <input class="line-length" type="range" min="10" max="99" value="20" oninput="updateLength(this.value)">
+      <input class="line-length" type="range" min="10" max="99" value="40" oninput="updateLength(this.value)">
     </div>
     <label><input type="checkbox"
                   onchange="renderer.setClearColor(this.checked ? 0x000000 : 0xffffff); 
@@ -108,11 +110,14 @@
 <div class="scene-container"></div>
 
 <script>
+
+document.querySelector(".left").style.height = innerHeight * .9 + "px"
+
 ///////////////////////////////////////////////////////////////////////////////
 // global variables
 ///////////////////////////////////////////////////////////////////////////////
 
-let count = 20000;
+let count = 40000;
 let t = 0;
 let paused = false;
 let freeze = false;
@@ -135,7 +140,7 @@ const template = document.querySelector('.oscillator-template')
     .content.querySelector(".oscillator");
 
 const oscillators = [];
-for (let i=0; i<6; i++) oscillators.push(Oscillator())
+for (let i=0; i<3; i++) oscillators.push(Oscillator())
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -197,13 +202,16 @@ function Oscillator(i = oscillators.length) {
 
   // axes to be effected by this oscillator 
   const x = newOscillator.querySelector(".axes .x")
-  self.x = x.checked = i === 0 || i === 1;
+  // self.x = x.checked = i === 0 || i === 3;
+  self.x = x.checked = i % 3 === 0;
   
   const y = newOscillator.querySelector(".axes .y")
-  self.y = y.checked = i === 2 || i === 3;
+  // self.y = y.checked = i === 1 || i === 4;
+  self.y = y.checked = i % 3 === 1;
 
   const z = newOscillator.querySelector(".axes .z")
-  self.z = z.checked = i === 4 || i === 5;
+  // self.z = z.checked = i === 2 || i === 5;
+  self.z = z.checked = i % 3 === 2;
 
   [x, y, z].map(function(d) {
     d.onchange = function() {shouldMute(this)}
@@ -409,6 +417,12 @@ function animate() {
 // some functions for updating the number of vertices, adjusting the master 
 // volume control, starting/stopping the phase, etc.
 ///////////////////////////////////////////////////////////////////////////////
+
+function addOscillator() {
+  oscillators.push(new Oscillator())
+  t = 0;
+  if (paused) animate()
+}
 
 function updateVolume(val) {
   document.querySelector(".volume").innerHTML = "Volume: " + val + "%";
